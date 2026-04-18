@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--
+        App theme. The Compose UI calls MaterialTheme {} inside setContent {},
+        so this XML theme only needs to provide a no-action-bar Activity shell
+        with a sane status/nav bar. We intentionally avoid Theme.Material3.*
+        parents because that requires the com.google.android.material XML
+        library, which this Compose-only project doesn't depend on.
+    -->
+    <style name="Theme.MapTest" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:windowLightStatusBar">true</item>
+    </style>
+</resources>

@@ -1,0 +1,119 @@
+# =============================================================================
+# GITHUB ACTIONS CI WORKFLOW
+# =============================================================================
+# This runs tests automatically on every push and pull request.
+#
+# WHY CI FOR TESTS:
+# - Catches regressions before they reach production
+# - Ensures every PR passes tests before merge
+# - Provides a safety net for refactoring
+#
+# INTERVIEW QUESTION: "How do you integrate tests into CI/CD?"
+# ANSWER: "I run unit tests on every push (fast, no emulator needed).
+# Instrumented tests run on PRs targeting main, using GitHub Actions'
+# Android emulator. Tests must pass to merge. I also generate test
+# reports and track flaky test trends."
+# =============================================================================
+
+name: Android CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  # =========================================================================
+  # JOB 1: Unit Tests (fast, no emulator)
+  # =========================================================================
+  unit-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Run unit tests
+        run: ./gradlew test
+
+      - name: Upload test report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unit-test-report
+          path: app/build/reports/tests/
+
+  # =========================================================================
+  # JOB 2: Instrumented Tests (needs emulator)
+  # =========================================================================
+  instrumented-tests:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'  # Only on PRs (expensive)
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Run instrumented tests
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          target: google_apis
+          arch: x86_64
+          script: ./gradlew connectedAndroidTest
+
+      - name: Upload instrumented test report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: instrumented-test-report
+          path: app/build/reports/androidTests/
+
+  # =========================================================================
+  # JOB 3: Lint checks
+  # =========================================================================
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Run lint
+        run: ./gradlew lint
+
+      - name: Upload lint report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lint-report
+          path: app/build/reports/lint-results*.html
