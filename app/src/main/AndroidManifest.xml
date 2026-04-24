@@ -28,8 +28,9 @@
          Below API 33 this declaration is ignored. -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
-    <!-- For testing: mock location provider -->
-    <uses-permission android:name="android.permission.ACCESS_MOCK_LOCATION" />
+    <!-- ACCESS_MOCK_LOCATION lives in src/debug/AndroidManifest.xml so it
+         only ships to debug builds — release APKs never request it, which
+         is the lint-recommended (and Play Store friendly) approach. -->
 
     <application
         android:name=".MapTestApp"

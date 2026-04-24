@@ -245,8 +245,8 @@ class RouteGraph {
     /** True if every location can reach every other location. */
     fun isFullyConnected(): Boolean {
         if (locations.isEmpty()) return true
-        val start = locations.keys.first()
-        return reachableFrom(start).size == locations.size
+        val total = locations.size
+        return locations.keys.all { reachableFrom(it).size == total }
     }
 
     fun getNeighbors(locationId: String): List<Edge> =

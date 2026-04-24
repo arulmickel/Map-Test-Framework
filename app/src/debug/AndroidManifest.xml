@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- Debug-only: mock location provider for instrumented tests. The
+         manifest merger adds this on top of the main manifest only for
+         debug builds, so release APKs do not declare ACCESS_MOCK_LOCATION
+         (avoids a Play Store rejection).
+
+         tools:ignore="MockLocation" — lint flags this even when correctly
+         scoped to the debug source set (known AGP false positive). The
+         file path itself enforces the debug-only contract. -->
+    <uses-permission
+        android:name="android.permission.ACCESS_MOCK_LOCATION"
+        tools:ignore="MockLocation" />
+
+</manifest>
