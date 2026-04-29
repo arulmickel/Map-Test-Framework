@@ -12,39 +12,9 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-// =============================================================================
-// MAP VIEW MODEL
-// =============================================================================
-// This ViewModel manages ALL state for the map screens using
-// Unidirectional Data Flow (UDF).
-//
-// WHY UDF:
-// State flows in ONE direction: ViewModel → UI (via StateFlow)
-// Events flow in ONE direction: UI → ViewModel (via function calls)
-// This makes state predictable, testable, and debuggable.
-//
-//   ┌──────────┐    StateFlow    ┌──────┐
-//   │ ViewModel │ ──────────────→│  UI  │
-//   │           │←───────────────│      │
-//   └──────────┘    Events       └──────┘
-//
-// WHY StateFlow (not LiveData):
-// - Works with coroutines (consistent async model)
-// - Has an initial value (no null states to handle)
-// - Can be tested with Turbine library
-// - Not lifecycle-aware (ViewModel handles lifecycle via viewModelScope)
-//
-// TESTING APPROACH:
-// 1. Create ViewModel with a FakeRepository
-// 2. Call a function (e.g., searchPlaces("coffee"))
-// 3. Collect StateFlow emissions with Turbine
-// 4. Assert state transitions: Loading → Success(results)
-//
-// INTERVIEW QUESTION: "How do you test ViewModels?"
-// ANSWER: "I inject a FakeRepository, call ViewModel functions, and use
-// Turbine to assert on StateFlow emissions. I test the full state machine:
-// initial state → loading → success/error."
-// =============================================================================
+// Unidirectional state holder for the map screens. State flows out via
+// StateFlow; events flow in via function calls. Tests inject a fake
+// repository and assert on emissions with Turbine.
 
 @HiltViewModel
 class MapViewModel @Inject constructor(

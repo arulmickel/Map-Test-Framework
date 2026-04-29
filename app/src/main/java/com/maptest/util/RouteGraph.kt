@@ -4,47 +4,14 @@ import com.maptest.domain.model.SavedLocation
 import java.util.LinkedList
 import java.util.PriorityQueue
 
-// =============================================================================
-// ROUTE GRAPH — BFS / DFS / DIJKSTRA for map route validation
-// =============================================================================
+// Weighted, directed graph for route validation.
+//   Nodes = locations (SavedLocation)
+//   Edges = routes between locations, weighted by distance (km)
 //
-// ⭐ DSA INTERVIEW QUESTION — "Design a routing system for a maps app"
-//
-// WHAT THIS IS:
-// A weighted, directed graph where:
-//   - Nodes = locations (SavedLocation)
-//   - Edges = routes between locations, weighted by distance (km)
-//
-// WHY THREE ALGORITHMS:
-//
-//   BFS (Breadth-First Search):
-//     Finds the route with the fewest HOPS (stops). Good for "minimum
-//     transfers" in transit, or testing that two locations are reachable.
-//     Time: O(V + E)  |  Space: O(V)
-//
-//   DFS (Depth-First Search):
-//     Finds ANY path between two locations. Good for "can I get there at
-//     all?" — the reachability check. Also detects cycles.
-//     Time: O(V + E)  |  Space: O(V)
-//
-//   Dijkstra (Shortest Weighted Path):
-//     Finds the route with the shortest DISTANCE. This is what Google/Apple
-//     Maps actually uses (plus heuristics = A*). Asked in every graph
-//     interview.
-//     Time: O((V + E) log V)  |  Space: O(V)
-//
-// HOW THIS MAPS TO APPLE MAPS SDET WORK:
-// An SDET wouldn't build the routing engine — the Maps team does that. But
-// the SDET VALIDATES routes: "given this graph, does the algorithm return
-// the expected path?" That's what the test class proves.
-//
-// INTERVIEW QUESTION: "How would you test a routing algorithm?"
-// ANSWER: "I build a known graph with hand-calculated shortest paths, run
-// the algorithm, and assert the returned path and distance match. I also
-// test edge cases: disconnected nodes, cycles, zero-weight edges, single
-// node, and same start/end. I don't test the algorithm itself — I test that
-// the SYSTEM returns correct results for known inputs."
-// =============================================================================
+// Three traversals are exposed because each answers a different question:
+//   BFS      — fewest hops between two locations          O(V + E)
+//   DFS      — any path / reachability check              O(V + E)
+//   Dijkstra — shortest weighted path                     O((V + E) log V)
 
 class RouteGraph {
 
@@ -162,16 +129,8 @@ class RouteGraph {
         return if (dfsRecursive(startId)) buildRoute(path) else null
     }
 
-    // =========================================================================
-    // DIJKSTRA — shortest weighted path
-    //
-    // Uses a min-heap (PriorityQueue) to always expand the closest unvisited
-    // node. This guarantees the first time we reach the end node, it's via
-    // the shortest total distance.
-    //
-    // DSA: This is THE graph algorithm to know for maps interviews. Apple
-    // Maps uses A* (Dijkstra + a heuristic), but Dijkstra is the foundation.
-    // =========================================================================
+    // Dijkstra: min-heap keyed by total distance from start. The first time
+    // we pop the end node, it's via the shortest path.
     fun dijkstra(startId: String, endId: String): Route? {
         if (startId == endId) {
             val loc = locations[startId] ?: return null

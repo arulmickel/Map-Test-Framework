@@ -16,22 +16,9 @@ import org.junit.Before
 import org.junit.Test
 import com.google.common.truth.Truth.assertThat
 
-// =============================================================================
-// MAP VIEW MODEL TESTS
-// =============================================================================
-// Tests the ViewModel's state management logic in isolation.
-//
-// KEY TESTING CONCEPTS:
-// 1. Mock the Repository — ViewModel is tested alone
-// 2. Use TestDispatcher — controls coroutine execution
-// 3. Test state transitions — verify Loading → Success/Error
-//
-// INTERVIEW QUESTION: "How do you test ViewModels with coroutines?"
-// ANSWER: "I replace the Main dispatcher with a TestDispatcher using
-// Dispatchers.setMain(). I mock the Repository with MockK to return
-// controlled data. Then I collect StateFlow emissions and assert the
-// state transitions match expected behavior."
-// =============================================================================
+// MockK fakes the Repository so the ViewModel is exercised in isolation.
+// Dispatchers.setMain installs a TestDispatcher; assertions cover the
+// state machine (idle → loading → success / error).
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class MapViewModelTest {

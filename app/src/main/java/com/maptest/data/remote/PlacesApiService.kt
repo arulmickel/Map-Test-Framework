@@ -4,29 +4,10 @@ import retrofit2.Response
 import retrofit2.http.GET
 import retrofit2.http.Query
 
-// =============================================================================
-// PLACES API SERVICE (Retrofit)
-// =============================================================================
-// This defines the network API for searching places/locations.
-// In a real app, this would call Google Places API or a custom backend.
-//
-// WHY RETROFIT:
-// - Type-safe HTTP client — define API as a Kotlin interface
-// - Automatic JSON parsing (Gson/Moshi)
-// - Works with coroutines (suspend functions)
-// - Easy to mock for testing (just implement the interface)
-//
-// TESTING APPROACH:
-// 1. Unit tests: Mock this interface with MockK → return fake responses
-// 2. Instrumented tests: Use MockWebServer → intercept HTTP calls and
-//    return predefined JSON responses. No real network calls in tests.
-//
-// INTERVIEW QUESTION: "How do you test API integrations?"
-// ANSWER: "Unit tests mock the Retrofit interface. Integration tests use
-// OkHttp MockWebServer to simulate the real server — I can test success,
-// error codes (404, 500), timeouts, and malformed JSON without hitting
-// any real server."
-// =============================================================================
+// Retrofit interface for the places search backend. Unit tests mock this
+// interface with MockK; integration tests use MockWebServer so success,
+// 4xx/5xx, timeouts, and malformed JSON can be exercised without a real
+// server.
 
 interface PlacesApiService {
 
@@ -52,12 +33,8 @@ interface PlacesApiService {
     ): Response<PlacesSearchResponse>
 }
 
-// =============================================================================
-// API RESPONSE MODELS
-// =============================================================================
-// These model the JSON structure returned by the API.
-// Keep them separate from domain models — API format can change independently.
-// =============================================================================
+// API DTOs. Kept separate from domain models so JSON shape changes don't
+// ripple into the rest of the app.
 
 data class PlacesSearchResponse(
     val results: List<PlaceResult>,

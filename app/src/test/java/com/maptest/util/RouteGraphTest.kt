@@ -5,16 +5,9 @@ import com.maptest.domain.model.SavedLocation
 import org.junit.Before
 import org.junit.Test
 
-// =============================================================================
-// ROUTE GRAPH UNIT TESTS
-// =============================================================================
-// ⭐ DSA TEST FILE — validates BFS, DFS, and Dijkstra on known graphs.
+// Validates BFS, DFS, and Dijkstra on small, hand-traceable graphs.
 //
-// Test strategy: we build small, hand-traceable graphs, run each algorithm,
-// and assert the returned path and distance. Every test could be drawn on
-// a whiteboard in an interview.
-//
-// GRAPH USED IN MOST TESTS:
+// Reference graph used in most tests:
 //
 //     A ——2——> B ——3——> D
 //     |        |        ↑
@@ -22,14 +15,9 @@ import org.junit.Test
 //     ↓        ↓        2
 //     C ——5——> E ——2——> F
 //
-//   Shortest path A→D:
+//   Shortest A→D:
 //     By hops (BFS):     A→B→D          (2 hops)
-//     By distance (Dij): A→B→E→F→D      (2+1+2+2 = 7) vs A→B→D (2+3 = 5)
-//                         → A→B→D wins at distance 5
-//
-// INTERVIEW QUESTION: "Walk me through how you'd validate a routing algorithm."
-// ANSWER: This file.
-// =============================================================================
+//     By distance (Dij): A→B→D wins at 5  (A→B→E→F→D would be 7)
 
 class RouteGraphTest {
 

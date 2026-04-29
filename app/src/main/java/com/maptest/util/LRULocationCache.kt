@@ -2,65 +2,18 @@ package com.maptest.util
 
 import com.maptest.domain.model.SavedLocation
 
-// =============================================================================
-// LRU (Least Recently Used) LOCATION CACHE
-// =============================================================================
+// O(1) get / put / remove cache backing the location store.
 //
-// ⭐⭐⭐ THIS IS THE MOST IMPORTANT DSA FILE IN THIS PROJECT ⭐⭐⭐
-//
-// WHY: LRU Cache is one of the most commonly asked Apple SDET interview
-// questions. It appeared in real Glassdoor reports for the SDET Austin role.
-// LeetCode #146 — you MUST be able to implement this from scratch.
-//
-// WHAT IS AN LRU CACHE?
-// Imagine you can only remember 5 phone numbers. When you learn a 6th,
-// you forget the one you haven't used the longest. That's LRU.
-//
-// WHY IT'S USED IN MAPS:
-// A maps app loads tiles (small square images of the map). You can't keep
-// ALL tiles in memory — the phone would run out of RAM. So you keep the
-// most recently viewed tiles and evict the oldest ones.
-//
-// HOW IT WORKS (the DSA part):
-// We need TWO operations to be O(1) — constant time:
-//   1. GET: Look up a location by key → O(1) with HashMap
-//   2. PUT: Add a new location, evict oldest if full → O(1) with Doubly Linked List
-//
-// HashMap alone: O(1) lookup, but no order information.
-// LinkedList alone: O(1) insert/delete, but O(n) lookup.
-// Combined: O(1) for everything.
-//
-// STRUCTURE:
-//   HashMap<Key, Node>  →  for O(1) lookup
-//   DoublyLinkedList     →  for O(1) insert/remove + order tracking
+// HashMap<Key, Node> for O(1) lookup; doubly-linked list for O(1) reordering
+// and eviction. Head = most recently used, tail = LRU candidate.
 //
 //   Head ←→ Node1 ←→ Node2 ←→ Node3 ←→ Tail
 //   ↑ Most recently used              Least recently used ↑
-//   (front)                                         (back)
-//
-// OPERATIONS:
-//   GET(key):
-//     1. Look up in HashMap → O(1)
-//     2. Move node to front of list (most recently used) → O(1)
-//     3. Return value
-//
-//   PUT(key, value):
-//     1. If key exists: update value, move to front → O(1)
-//     2. If key doesn't exist:
-//        a. If cache is full: remove node at tail (LRU) → O(1)
-//        b. Create new node, add to front, add to HashMap → O(1)
-//
-// =============================================================================
 
 class LRULocationCache(private val capacity: Int) {
 
-    // =========================================================================
-    // DOUBLY LINKED LIST NODE
-    // =========================================================================
-    // Each node holds the key-value pair and pointers to prev/next nodes.
-    // WHY store the key? When we evict from the tail, we need the key to
-    // also remove it from the HashMap.
-    // =========================================================================
+    // Stores the key alongside the value so eviction from the tail can
+    // also remove the entry from the HashMap.
     private data class Node(
         val key: String,
         var value: SavedLocation,
@@ -85,10 +38,6 @@ class LRULocationCache(private val capacity: Int) {
         tail.prev = head
     }
 
-    // =========================================================================
-    // GET: Retrieve a location from cache
-    // Time: O(1) | Space: O(1)
-    // =========================================================================
     fun get(key: String): SavedLocation? {
         val node = map[key] ?: return null
 
@@ -100,10 +49,6 @@ class LRULocationCache(private val capacity: Int) {
         return node.value
     }
 
-    // =========================================================================
-    // PUT: Add or update a location in cache
-    // Time: O(1) | Space: O(1)
-    // =========================================================================
     fun put(key: String, location: SavedLocation) {
         if (map.containsKey(key)) {
             // Key exists → update value and move to front
@@ -128,9 +73,6 @@ class LRULocationCache(private val capacity: Int) {
         }
     }
 
-    // =========================================================================
-    // REMOVE: Explicitly remove a location from cache
-    // =========================================================================
     fun remove(key: String): Boolean {
         val node = map[key] ?: return false
         removeNode(node)
@@ -138,10 +80,6 @@ class LRULocationCache(private val capacity: Int) {
         size--
         return true
     }
-
-    // =========================================================================
-    // UTILITY METHODS
-    // =========================================================================
 
     fun contains(key: String): Boolean = map.containsKey(key)
 
@@ -158,12 +96,7 @@ class LRULocationCache(private val capacity: Int) {
         size = 0
     }
 
-    /**
-     * Returns all cached locations in order from most recently used to least.
-     * Useful for displaying "recent locations" in UI.
-     *
-     * DSA: This is a linked list traversal — O(n) time, O(n) space for the list.
-     */
+    /** All cached locations in MRU → LRU order. */
     fun getAllInOrder(): List<SavedLocation> {
         val result = mutableListOf<SavedLocation>()
         var current = head.next
@@ -175,15 +108,9 @@ class LRULocationCache(private val capacity: Int) {
     }
 
     /**
-     * Find the nearest cached location to the given coordinates.
-     * Uses the Haversine distance calculation from SavedLocation.
-     *
-     * DSA: Linear scan O(n). Could be optimized with a KD-Tree for large caches,
-     * but for typical cache sizes (50-200), linear scan is fast enough.
-     *
-     * INTERVIEW FOLLOW-UP: "How would you optimize this for millions of locations?"
-     * → "I'd use a KD-Tree or a spatial index like R-Tree for O(log n) nearest
-     *    neighbor queries."
+     * Nearest cached location to the given coordinates by Haversine distance.
+     * Linear scan O(n); a KD-Tree / R-Tree spatial index would be O(log n)
+     * but isn't worth it at typical cache sizes (50-200).
      */
     fun findNearest(latitude: Double, longitude: Double): SavedLocation? {
         var nearest: SavedLocation? = null
@@ -202,16 +129,6 @@ class LRULocationCache(private val capacity: Int) {
         return nearest
     }
 
-    // =========================================================================
-    // PRIVATE HELPERS: Linked List Operations
-    // =========================================================================
-
-    /**
-     * Add a node right after head (most recently used position).
-     *
-     * Before: head ←→ X ←→ ...
-     * After:  head ←→ node ←→ X ←→ ...
-     */
     private fun addToFront(node: Node) {
         node.prev = head
         node.next = head.next
@@ -219,12 +136,6 @@ class LRULocationCache(private val capacity: Int) {
         head.next = node
     }
 
-    /**
-     * Remove a node from its current position in the list.
-     *
-     * Before: A ←→ node ←→ B
-     * After:  A ←→ B      (node is disconnected)
-     */
     private fun removeNode(node: Node) {
         node.prev?.next = node.next
         node.next?.prev = node.prev

@@ -9,40 +9,12 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.runner.RunWith
 
-// =============================================================================
-// BASE TEST CASE
-// =============================================================================
-// ⭐ This is the FOUNDATION of the test framework. Every instrumented test
-// extends this class to get common setup for free.
+// Foundation for instrumented tests. Subclasses inherit Hilt + Compose
+// rule wiring.
 //
-// WHY A BASE TEST CLASS:
-// Without it, every test file would repeat:
-//   - HiltAndroidRule setup
-//   - ComposeTestRule setup
-//   - Common page object instantiation
-//   - Common helper initialization
-//
-// With it, a new test class is just:
-//   class MyNewTest : BaseTestCase() {
-//       @Test fun myTest() { ... }
-//   }
-//
-// RULE ORDER MATTERS:
-// @Rule(order = 0) HiltAndroidRule → Sets up DI FIRST
-// @Rule(order = 1) ComposeTestRule → Launches Activity AFTER DI is ready
-//
-// If you reverse the order, the Activity launches before Hilt is ready
-// and the app crashes. This is a common interview question:
-// "Why does your test crash with 'Hilt component not available'?"
-//
-// INTERVIEW QUESTION: "Walk me through your test framework architecture."
-// ANSWER: "I have a BaseTestCase that sets up Hilt DI and Compose test rules.
-// Page Objects encapsulate UI interactions — one per screen. Helpers provide
-// utilities for location mocking, network simulation, and permissions.
-// TestDataBuilder creates consistent test data with sensible defaults.
-// Each test class extends BaseTestCase and uses Page Objects to interact
-// with the UI in a readable, maintainable way."
-// =============================================================================
+// Rule ordering is load-bearing: HiltAndroidRule must run first (order = 0)
+// so DI is ready before the Activity launches via ComposeTestRule
+// (order = 1). Reversing the order produces "Hilt component not available".
 
 @HiltAndroidTest
 @RunWith(AndroidJUnit4::class)

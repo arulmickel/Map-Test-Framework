@@ -6,25 +6,15 @@ import com.google.common.truth.Truth.assertThat
 import org.junit.Before
 import org.junit.Test
 
-// =============================================================================
-// LRU CACHE UNIT TESTS
-// =============================================================================
-// ⭐⭐⭐ THE MOST IMPORTANT TEST FILE FOR YOUR DSA INTERVIEWS ⭐⭐⭐
+// Coverage:
+//   1. Basic operations (get, put, remove)
+//   2. Eviction behaviour (the core of LRU)
+//   3. Access-order tracking (what makes it LRU, not FIFO)
+//   4. Edge cases (empty, single element)
+//   5. Capacity boundaries (exactly full, overflow, zero capacity)
+//   6. Domain-specific (findNearest, getAllInOrder)
 //
-// If an interviewer says "implement an LRU cache and write tests for it,"
-// you can walk through this entire file from memory.
-//
-// TEST STRATEGY:
-// 1. Basic operations (get, put, remove)
-// 2. Eviction behavior (the core of LRU)
-// 3. Access order tracking (what makes it LRU, not FIFO)
-// 4. Edge cases (empty cache, single element, null-like scenarios)
-// 5. Capacity boundaries (exactly full, overflow, zero capacity)
-// 6. Domain-specific tests (nearest location, cache ordering)
-//
-// EVERY test follows Arrange-Act-Assert. EVERY test is independent.
-// EVERY test name reads like a specification.
-// =============================================================================
+// Every test follows Arrange-Act-Assert and is independent.
 
 class LRUCacheTest {
 
@@ -49,10 +39,6 @@ class LRUCacheTest {
         // Default cache with capacity 3 — small enough to test eviction easily
         cache = LRULocationCache(capacity = 3)
     }
-
-    // =========================================================================
-    // BASIC OPERATIONS
-    // =========================================================================
 
     @Test
     fun `put and get - stores and retrieves a location`() {
@@ -105,14 +91,8 @@ class LRUCacheTest {
         assertThat(removed).isFalse()
     }
 
-    // =========================================================================
-    // EVICTION BEHAVIOR (the core of LRU)
-    // =========================================================================
-    // This is what interviewers care about most. LRU means:
-    // "When the cache is full and we add a new item, REMOVE the item
-    // that was accessed LEAST RECENTLY."
-    // =========================================================================
-
+    // Eviction: when the cache is full, the next put removes the entry
+    // that was accessed least recently.
     @Test
     fun `eviction - removes least recently used when full`() {
         // ARRANGE: Fill cache to capacity (3)

@@ -17,44 +17,23 @@ import org.junit.Assume
 import org.junit.Before
 import org.junit.Test
 
-// =============================================================================
-// PERMISSION TESTS — Android 13 / 14 / 15 runtime permission matrix
-// =============================================================================
-// ⭐ HIGHEST-VALUE UX TESTS for a MapKit SDET role.
+// Runtime permission matrix across Android 13 / 14 / 15.
 //
-// What Android's recent versions changed:
+//   API 33 (Tiramisu)        — POST_NOTIFICATIONS becomes runtime
+//   API 34 (UpsideDownCake)  — foreground-service types declared, background
+//                              location rules tightened
+//   API 35 (VanillaIceCream) — further FGS restrictions, harder push toward
+//                              "While using the app" for background location
 //
-//   Android 13 (API 33, TIRAMISU)
-//     POST_NOTIFICATIONS becomes a runtime permission. Apps that used to
-//     show notifications without asking now get silently dropped until the
-//     user grants this. Huge UX regression surface.
+// Matrix this class covers:
+//                           | GRANTED | DENIED | RATIONALE | N/A           |
+//   ------------------------|---------|--------|-----------|---------------|
+//   ACCESS_FINE_LOCATION    |   ✓     |   ✓    |    ✓      | n/a           |
+//   ACCESS_BACKGROUND_LOC   |   ✓     |   ✓    |    ✓      | API < 29      |
+//   POST_NOTIFICATIONS      |   ✓     |   ✓    |    ✓      | API < 33      |
 //
-//   Android 14 (API 34, UPSIDE_DOWN_CAKE)
-//     - Partial photo picker grants (not relevant here).
-//     - Foreground-service types must be declared; background location
-//       rules tightened.
-//
-//   Android 15 (API 35, VANILLA_ICE_CREAM)
-//     - Further foreground-service restrictions.
-//     - Background-location prompts become more aggressive about steering
-//       users to the "While using the app" bucket.
-//
-// The matrix this test class covers:
-//
-//                           | GRANTED | DENIED | RATIONALE | NOT_APPLICABLE |
-//   -----------------------------------------------------------------------
-//   ACCESS_FINE_LOCATION    |   ✓     |   ✓    |    ✓      |     (n/a)      |
-//   ACCESS_BACKGROUND_LOC   |   ✓     |   ✓    |    ✓      |  API < 29      |
-//   POST_NOTIFICATIONS      |   ✓     |   ✓    |    ✓      |  API < 33      |
-//
-// Every cell is a test. The FakePermissionChecker lets us drive each state
-// independently; the API-level guards use Assume.assumeTrue so tests on old
-// emulators skip rather than fail.
-//
-// INTERVIEW QUESTION: "How would you test the matrix of permission states
-// an Android 13+ app can end up in?"
-// ANSWER: Walk through this file.
-// =============================================================================
+// FakePermissionChecker drives each state; Assume.assumeTrue skips rows
+// the running emulator's API level can't reach.
 
 @UninstallModules(PermissionModule::class)
 @HiltAndroidTest

@@ -11,50 +11,23 @@ import dagger.hilt.android.testing.UninstallModules
 import org.junit.Before
 import org.junit.Test
 
-// =============================================================================
-// OFFLINE MODE TESTS
-// =============================================================================
-// ⭐ THESE ARE THE HIGHEST-VALUE TESTS FOR A MAPKIT SDET ROLE
+// Verifies offline behaviour end-to-end:
+//   1. app doesn't crash when offline
+//   2. cached/saved data stays accessible
+//   3. offline messaging appears
+//   4. app recovers when connectivity returns
+//   5. data syncs after reconnection
 //
-// Apple Maps MUST work offline. Users open maps when they:
-// - Enter tunnels or subways
-// - Travel to areas with poor coverage
-// - Are on airplanes
-// - Have disabled cellular data
-//
-// The SDET must verify:
-// 1. App doesn't crash when offline
-// 2. Cached/saved data is still accessible
-// 3. Appropriate "offline" messaging appears
-// 4. App recovers gracefully when connectivity returns
-// 5. Data syncs correctly after reconnection
-//
-// HOW THIS TEST CLASS SWAPS THE NETWORK MONITOR:
-//
-// 1. @UninstallModules(NetworkModule::class)
-//    Removes the production binding of NetworkMonitor from the Hilt graph
-//    for this test class only. Other bindings (DB, Retrofit) are untouched
-//    because NetworkModule is a tiny, focused module.
-//
-// 2. @BindValue val networkMonitor: NetworkMonitor = FakeNetworkMonitor(...)
-//    Adds a new binding pointing at our fake. Hilt field-injects this into
-//    the test graph before the Activity is launched, so MapViewModel ends
-//    up with the fake as its NetworkMonitor.
-//
-// 3. We type the field as `NetworkMonitor` (the interface) because that's
-//    what production code depends on — Hilt matches bindings by the DECLARED
-//    type of the field, not the runtime type.
-//
-// INTERVIEW QUESTION: "Walk me through how this offline test controls the
-// network state end-to-end."
-// ANSWER: "The production MapViewModel depends on a NetworkMonitor interface.
-// In tests I uninstall the module that provides the real impl and @BindValue
-// a FakeNetworkMonitor instead. The fake owns a MutableStateFlow<Boolean>
-// that I poke via setOnline(true/false). MapViewModel collects that StateFlow
-// in its init block and mirrors it into uiState.isOnline. The Compose UI
-// renders the OFFLINE_BANNER when isOnline is false. So a single setOnline(
-// false) call propagates: fake → ViewModel → UI → test assertion."
-// =============================================================================
+// How the network state is controlled:
+//   - @UninstallModules(NetworkModule::class) removes the production
+//     binding of NetworkMonitor for this test class. Other bindings are
+//     untouched because NetworkModule is intentionally tiny.
+//   - @BindValue installs a FakeNetworkMonitor that owns a
+//     MutableStateFlow<Boolean>. setOnline(true/false) flips the flow,
+//     ViewModel mirrors it into uiState.isOnline, and the Compose UI
+//     renders the OFFLINE_BANNER.
+//   - The field is typed as `NetworkMonitor` (interface) because Hilt
+//     matches by declared type, not runtime type.
 
 @UninstallModules(NetworkModule::class)
 @HiltAndroidTest
@@ -143,7 +116,7 @@ class OfflineModeTest : BaseTestCase() {
 
         // The contract here is "app stays up and shows the offline banner."
         // Whether cached results are present depends on the repository; the
-        // offline banner is the UI signal the SDET can verify deterministically.
+        // offline banner is the deterministic UI signal we assert on.
         mapPage.assertMapDisplayed()
         mapPage.assertOfflineBannerVisible()
     }

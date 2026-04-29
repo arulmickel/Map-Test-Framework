@@ -3,39 +3,12 @@ package com.maptest.data.local
 import androidx.room.*
 import kotlinx.coroutines.flow.Flow
 
-// =============================================================================
-// DATA ACCESS OBJECT (DAO): LocationDao
-// =============================================================================
-// The DAO defines all database operations. Room generates the implementation
-// at compile time from these abstract methods.
-//
-// WHY Flow RETURN TYPES (not LiveData, not suspend):
-// - Flow is reactive: UI automatically updates when data changes
-// - Flow works with coroutines (consistent async pattern)
-// - Flow can be tested with Turbine library (clean assertions)
-// - LiveData is lifecycle-aware but harder to test and transform
-//
-// INTERVIEW QUESTION: "What's the difference between a suspend function
-// and a Flow-returning function in a DAO?"
-// ANSWER: "Suspend functions are one-shot — call once, get one result.
-// Flow functions are reactive — they emit a new value every time the
-// underlying data changes. Use suspend for writes (insert/delete),
-// Flow for reads that the UI observes."
-//
-// TESTING APPROACH:
-// 1. Create in-memory database
-// 2. Insert test data using suspend functions
-// 3. Collect Flow emissions using Turbine
-// 4. Assert values match expected
-// 5. Close database in @After
-// =============================================================================
+// Reads return Flow so the UI updates reactively when rows change. Writes
+// are suspend (one-shot). Tests use Room.inMemoryDatabaseBuilder + Turbine
+// to assert on emissions.
 
 @Dao
 interface LocationDao {
-
-    // =========================================================================
-    // READ OPERATIONS (return Flow for reactive updates)
-    // =========================================================================
 
     @Query("SELECT * FROM saved_locations ORDER BY savedTimestamp DESC")
     fun getAllLocations(): Flow<List<LocationEntity>>
@@ -46,13 +19,8 @@ interface LocationDao {
     @Query("SELECT * FROM saved_locations WHERE id = :locationId")
     suspend fun getLocationById(locationId: String): LocationEntity?
 
-    // =========================================================================
-    // SEARCH: Uses SQL LIKE for pattern matching
-    // 
-    // DSA CONNECTION: This is a basic string search. In interviews, you might
-    // be asked to implement more efficient search (Trie for autocomplete,
-    // or fuzzy matching for typo tolerance).
-    // =========================================================================
+    // SQL LIKE substring match. The Trie-backed autocomplete in
+    // util/LocationTrie handles prefix queries faster.
     @Query(
         """
         SELECT * FROM saved_locations 
@@ -63,18 +31,8 @@ interface LocationDao {
     )
     fun searchLocations(query: String): Flow<List<LocationEntity>>
 
-    // =========================================================================
-    // NEARBY SEARCH: Find locations within a bounding box
-    //
-    // WHY BOUNDING BOX (not radius):
-    // SQL doesn't have a built-in "distance" function. We approximate
-    // "nearby" by checking if lat/lng fall within a box. The actual distance
-    // filtering happens in the Repository layer using Haversine formula.
-    //
-    // DSA CONNECTION: This is a 2D range query. In interviews, this maps to
-    // "find all points within a rectangle" — solvable with sorted arrays +
-    // binary search, or with a KD-Tree for optimal performance.
-    // =========================================================================
+    // SQL has no native distance function, so this is a bounding-box query.
+    // Repository layer follows up with Haversine to filter to a true radius.
     @Query(
         """
         SELECT * FROM saved_locations

@@ -12,34 +12,13 @@ import kotlinx.coroutines.flow.asStateFlow
 import javax.inject.Inject
 import javax.inject.Singleton
 
-// =============================================================================
-// NETWORK MONITOR
-// =============================================================================
-// WHY THIS EXISTS:
-// A maps app MUST handle offline scenarios gracefully. Users lose connectivity
-// in tunnels, basements, airplanes, rural areas. This monitor provides a
-// reactive StateFlow of network state so the UI can adapt instantly.
+// Reactive StateFlow of network state. Production code depends on the
+// `NetworkMonitor` interface; tests swap in `FakeNetworkMonitor` via Hilt's
+// @BindValue. The interface boundary keeps the real ConnectivityManager
+// callback registration out of test code.
 //
-// WHY StateFlow (not Flow):
-// - Always has a current value → the UI can render immediately on collect
-// - `value` is readable without suspending → handy for one-shot checks
-// - Hot: every observer sees the same state at the same time
-// - Testable: the fake just exposes a MutableStateFlow we can poke
-//
-// WHY AN INTERFACE:
-// The production code depends on the `NetworkMonitor` interface, not the
-// real class. In tests we swap in `FakeNetworkMonitor` via Hilt's @BindValue.
-// Without the interface, we'd be stuck subclassing a class that registers
-// real Android NetworkCallbacks in its constructor — painful and flaky.
-//
-// INTERVIEW QUESTION: "How do you test offline behavior?"
-// ANSWER: "I extract NetworkMonitor as an interface with a StateFlow<Boolean>.
-// Production uses a real impl that bridges ConnectivityManager callbacks into
-// the StateFlow. Tests use a FakeNetworkMonitor with setOnline(true/false),
-// injected via Hilt's @BindValue. My ViewModel observes the interface, so
-// the same code runs in both places — the only difference is who's pushing
-// values into the flow."
-// =============================================================================
+// StateFlow (not Flow) because the UI needs an immediate value on collect
+// and `value` is readable without suspending.
 
 interface NetworkMonitor {
     /** Hot stream of connectivity state. Always has a current value. */
@@ -49,13 +28,9 @@ interface NetworkMonitor {
     fun isCurrentlyOnline(): Boolean = isOnline.value
 }
 
-// =============================================================================
-// REAL IMPLEMENTATION
-// =============================================================================
 // Registers a single NetworkCallback at construction (app scope) and forwards
-// every change into a MutableStateFlow. Because this is @Singleton, the
-// callback lives for the lifetime of the process — no unregister needed.
-// =============================================================================
+// every change into a MutableStateFlow. @Singleton keeps the callback alive
+// for the lifetime of the process — no unregister needed.
 
 @Singleton
 class RealNetworkMonitor @Inject constructor(
@@ -103,14 +78,8 @@ class RealNetworkMonitor @Inject constructor(
     }
 }
 
-// =============================================================================
-// FAKE IMPLEMENTATION (for tests)
-// =============================================================================
-// Lives in `main` (not `androidTest`) so both unit tests and instrumented
-// tests can use it. It's a plain class — no Android framework dependencies —
-// so JVM unit tests can construct it directly.
-//
-// USAGE IN INSTRUMENTED TESTS:
+// Test fake. Lives in `main` (not `androidTest`) so both JVM unit tests and
+// instrumented tests can construct it — no Android framework dependencies.
 //
 //   @UninstallModules(NetworkModule::class)
 //   @HiltAndroidTest
@@ -123,13 +92,6 @@ class RealNetworkMonitor @Inject constructor(
 //           // ...
 //       }
 //   }
-//
-// INTERVIEW QUESTION: "Why does the fake live in main, not androidTest?"
-// ANSWER: "So both the JVM unit tests (src/test) and the instrumented tests
-// (src/androidTest) can share the same fake. Putting it in androidTest would
-// make it invisible to unit tests; putting it in a shared testFixtures module
-// is overkill for one class."
-// =============================================================================
 
 class FakeNetworkMonitor(initialOnline: Boolean = true) : NetworkMonitor {
 

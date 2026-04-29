@@ -15,29 +15,9 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import com.maptest.ui.TestTags
 
-// =============================================================================
-// SEARCH BAR COMPOSABLE
-// =============================================================================
-// CRITICAL TESTING CONCEPT: Every interactive element has a testTag.
-//
-// Modifier.testTag(TestTags.SEARCH_INPUT) ← This is how tests find this element
-//
-// In a test:
-//   composeTestRule.onNodeWithTag(TestTags.SEARCH_INPUT)
-//       .performTextInput("coffee shops")
-//
-// WHY testTag INSTEAD OF contentDescription:
-// - testTag: Only for testing. Invisible to users. Stable identifier.
-// - contentDescription: For accessibility (screen readers). Changes with locale.
-// Using contentDescription as a test selector would break internationalized apps.
-//
-// INTERVIEW QUESTION: "How do you add testability to Compose UI?"
-// ANSWER: "I add testTag modifiers to all interactive and assertable elements.
-// Tags come from a shared TestTags object so both production code and tests
-// reference the same constants. I also ensure semantic properties like
-// contentDescription are set for accessibility, but I don't use them as
-// test selectors."
-// =============================================================================
+// Every interactive element carries a testTag from the shared TestTags
+// object. contentDescription is reserved for accessibility (screen readers,
+// localized) so tests don't depend on copy that can change.
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

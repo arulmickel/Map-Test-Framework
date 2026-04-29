@@ -6,43 +6,17 @@ import com.maptest.data.remote.PlacesSearchResponse
 import com.maptest.domain.model.LocationCategory
 import com.maptest.domain.model.SavedLocation
 
-// =============================================================================
-// TEST DATA BUILDER
-// =============================================================================
-// ⭐ This is a KEY piece of test infrastructure that interviewers love to see.
+// Builder for valid test objects with sensible defaults. Each test
+// overrides only the fields it actually exercises:
 //
-// WHY TEST DATA BUILDERS:
-// Tests need data. Bad approach: hardcode data in each test → duplication,
-// hard to maintain, tests break when model changes.
+//   val favorited = TestDataBuilder.location(isFavorite = true)
+//   val nearby    = TestDataBuilder.location(latitude = 30.0, longitude = -97.0)
 //
-// Good approach: Builder pattern that creates valid test objects with sensible
-// defaults. Each test only overrides what's relevant to that specific test.
-//
-// EXAMPLE:
-//   // Test about favorites — only isFavorite matters
-//   val location = TestDataBuilder.location(isFavorite = true)
-//
-//   // Test about distance — only coordinates matter
-//   val location = TestDataBuilder.location(latitude = 30.0, longitude = -97.0)
-//
-// INTERVIEW QUESTION: "How do you manage test data?"
-// ANSWER: "I use a TestDataBuilder with sensible defaults. Each test only
-// overrides the fields relevant to its scenario. This reduces duplication
-// and makes tests resilient to model changes — if I add a new field to
-// SavedLocation, I update the default in ONE place, not in 50 tests."
-//
-// DSA CONNECTION: Builder pattern is a creational design pattern.
-// It's commonly asked about in OOP/design pattern interviews.
-// =============================================================================
+// Adding a new field to SavedLocation means updating one default here,
+// not 50 tests.
 
 object TestDataBuilder {
 
-    // =========================================================================
-    // SAVED LOCATION BUILDER
-    // =========================================================================
-    // Creates a SavedLocation with sensible defaults.
-    // Override only what your test cares about.
-    // =========================================================================
     fun location(
         id: String = "test_location_${System.nanoTime()}",
         name: String = "Test Location",

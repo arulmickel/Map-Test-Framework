@@ -1,33 +1,8 @@
 package com.maptest.ui
 
-// =============================================================================
-// TEST TAGS: Centralized UI Element Identifiers
-// =============================================================================
-// WHY CENTRALIZED TEST TAGS:
-// 
-// ⭐ This file is one of the most important in the entire project for SDET work.
-//
-// Test tags are how Compose UI tests find elements on screen. Instead of
-// searching by text (fragile — text changes with localization) or position
-// (fragile — layout changes break everything), we use stable identifiers.
-//
-// RULES:
-// 1. Every testable UI element gets a tag from this file
-// 2. Tags are constants — shared between app code and test code
-// 3. Tags are descriptive: "map_search_input" not "input1"
-// 4. Tags never change even if the UI is redesigned
-//
-// INTERVIEW QUESTION: "How do you create stable selectors for Compose UI tests?"
-// ANSWER: "I define test tags as constants in a shared object. Both the
-// Composable and the test reference the same constant. This way, if a tag
-// needs to change, I change it in one place. I never match by text content
-// because that breaks with localization or copy changes."
-//
-// COMPARISON WITH ESPRESSO (XML):
-// - Espresso: withId(R.id.search_input) — resource IDs in XML
-// - Compose: hasTestTag(TestTags.SEARCH_INPUT) — test tags in Compose
-// Both serve the same purpose: stable element identification.
-// =============================================================================
+// Centralized Compose test-tag constants. Both Composables and tests
+// reference the same constant, so renaming a tag is a one-place change.
+// Match by tag, not by text — text changes with localization.
 
 object TestTags {
     // =========================================================================

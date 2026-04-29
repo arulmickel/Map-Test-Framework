@@ -6,44 +6,9 @@ import androidx.test.ext.junit.rules.ActivityScenarioRule
 import com.maptest.ui.MainActivity
 import com.maptest.ui.TestTags
 
-// =============================================================================
-// MAP PAGE OBJECT
-// =============================================================================
-// ⭐ PAGE OBJECT MODEL (POM) — the most important test pattern to know.
-//
-// WHAT IS POM:
-// Each screen in the app gets a "Page Object" — a class that encapsulates
-// ALL interactions with that screen. Tests never directly call Espresso/
-// Compose test APIs. Instead, they call methods on Page Objects.
-//
-// WHY POM:
-// Without POM (bad):
-//   @Test fun testSearch() {
-//       composeTestRule.onNodeWithTag("search_input").performTextInput("coffee")
-//       composeTestRule.onNodeWithTag("search_results_list").assertIsDisplayed()
-//       composeTestRule.onNodeWithTag("search_result_0").performClick()
-//   }
-//
-// With POM (good):
-//   @Test fun testSearch() {
-//       mapPage.searchFor("coffee")
-//       mapPage.assertSearchResultsVisible()
-//       mapPage.tapSearchResult(0)
-//   }
-//
-// BENEFITS:
-// 1. If the UI changes (testTag renamed), update ONE place (the Page Object)
-//    instead of every test that uses that element
-// 2. Tests read like English — anyone can understand what's being tested
-// 3. Reusable across multiple tests — DRY principle
-// 4. Easier code review — reviewers focus on WHAT is tested, not HOW
-//
-// INTERVIEW QUESTION: "Explain the Page Object Model."
-// ANSWER: "POM separates test logic from UI interaction details. Each screen
-// has a Page class that wraps all element lookups and actions. Tests call
-// page methods like searchFor('coffee') instead of raw Compose test APIs.
-// This makes tests readable, maintainable, and resilient to UI changes."
-// =============================================================================
+// Page Object for the map screen. Tests call intent-revealing methods like
+// searchFor("coffee") / assertSearchResultsVisible() instead of raw Compose
+// matchers, so a testTag rename is a one-place change.
 
 class MapPage(
     private val rule: AndroidComposeTestRule<ActivityScenarioRule<MainActivity>, MainActivity>

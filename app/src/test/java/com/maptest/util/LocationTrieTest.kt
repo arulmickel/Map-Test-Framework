@@ -6,23 +6,9 @@ import com.maptest.domain.model.SavedLocation
 import org.junit.Before
 import org.junit.Test
 
-// =============================================================================
-// TRIE UNIT TESTS
-// =============================================================================
-// ⭐ DSA TEST FILE — mirrors the structure of LRUCacheTest
-//
-// Every public method of LocationTrie has multiple test cases covering:
-//   - Happy path (insert + search works)
-//   - Edge cases (empty string, single char, case sensitivity)
-//   - Boundary conditions (no matches, duplicate names)
-//   - Structural correctness (remove doesn't break other branches)
-//
-// These are JVM-only tests — no Android framework needed. They run in ~50ms
-// total, so they're great for CI fast-feedback loops.
-//
-// INTERVIEW QUESTION: "How would you test a Trie?"
-// ANSWER: Walk through this file.
-// =============================================================================
+// JVM-only tests covering happy path, edge cases (empty string, single
+// char, case sensitivity), boundary conditions (no matches, duplicate
+// names), and structural correctness after remove.
 
 class LocationTrieTest {
 

@@ -1,20 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <!-- 
-    PERMISSIONS FOR A MAPS APP
-    
-    TESTING RELEVANCE:
-    Permission handling is a MAJOR test scenario for MapKit SDET.
-    - What happens when user grants location permission?
-    - What happens when user denies it?
-    - What happens when user revokes it mid-session?
-    - Android 13-15 each handle permissions differently
-    
-    In tests, we use GrantPermissionRule or UiAutomator to simulate
-    grant/deny flows.
-    -->
-    
+    <!-- Permission states (granted, denied, mid-session revocation) take
+         different code paths and Android 13-15 handle them differently.
+         Tests use GrantPermissionRule or UiAutomator to simulate each flow. -->
+
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />

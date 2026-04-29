@@ -12,47 +12,17 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 
-// =============================================================================
-// LOCATION DAO INTEGRATION TESTS
-// =============================================================================
-// ⭐ THIS IS WHAT "INTEGRATION TEST" ACTUALLY MEANS FOR AN ANDROID SDET:
+// Integration tests against a real Room database (in-memory).
 //
-// Unit tests would mock the DAO. These tests DO NOT. They use a real Room
-// database — the generated SQL runs against a real SQLite engine — but the
-// database lives in memory and is thrown away after every test. That buys:
+// Real SQL means a typo in a @Query or schema drift fails here, where a
+// mocked DAO would happily return whatever you told it to. Real Flow
+// semantics mean we exercise Room's invalidation tracker. Real
+// OnConflictStrategy behaviour means we exercise actual SQLite semantics,
+// not Kotlin code paths.
 //
-//   1. REAL SQL validation. If a @Query string has a typo, or the schema
-//      drifts, these tests fail. Unit tests with a mocked DAO would happily
-//      return whatever you told them to.
-//
-//   2. REAL Flow semantics. Room emits Flow updates by listening to its own
-//      invalidation tracker. Mocks can't model that. These tests verify
-//      observers actually re-fire when rows change.
-//
-//   3. REAL conflict/transaction behavior. OnConflictStrategy.REPLACE is a
-//      SQLite behavior, not a Kotlin behavior — only a real DB proves it.
-//
-// WHY inMemoryDatabaseBuilder:
-//   - No disk I/O → ~10ms per test instead of ~100ms
-//   - No file cleanup → no leaked state between tests
-//   - Destroyed at process end → safe to run in parallel CI shards
-//
-// WHY allowMainThreadQueries:
-//   - Tests block on results; we don't want a Flow assertion to deadlock
-//     because Room refused to run a query off the main thread. Never use
-//     this in production code.
-//
-// INTERVIEW QUESTION: "What's the difference between a unit test and an
-// integration test for a DAO, and why do you need both?"
-// ANSWER: "A unit test mocks the DAO and asserts that the code calling it
-// does the right thing with returned data. An integration test uses a real
-// in-memory Room database and asserts the SQL behaves as expected: LIKE
-// patterns, ORDER BY, conflict strategies, Flow invalidation, range queries.
-// Unit tests catch wiring bugs; integration tests catch SQL bugs. You need
-// both because Room generates code at compile time, but generated code is
-// only as correct as the annotations you wrote — and those can be wrong in
-// ways the compiler won't catch."
-// =============================================================================
+// inMemoryDatabaseBuilder: no disk I/O, no leaked state between tests.
+// allowMainThreadQueries: tests block on results so a Flow assertion can't
+// deadlock waiting for an off-main-thread query. Never used in production.
 
 @RunWith(AndroidJUnit4::class)
 class LocationDaoTest {

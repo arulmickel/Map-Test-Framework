@@ -17,39 +17,14 @@ import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
 
-// =============================================================================
-// HILT DEPENDENCY INJECTION MODULE
-// =============================================================================
-// WHY DI IS CRITICAL FOR TESTING:
-//
-// Without DI (bad):
-//   class MapViewModel {
-//     val repo = LocationRepository(LocationDatabase.create(), RetrofitClient())
-//   }
-//   → Can't test ViewModel without a real database and real network!
-//
-// With DI (good):
-//   class MapViewModel @Inject constructor(val repo: LocationRepository)
-//   → In tests, Hilt injects a FakeRepository. No real DB or network.
-//
-// INTERVIEW QUESTION: "Explain how DI helps testability."
-// ANSWER: "DI decouples creation from usage. My ViewModel says 'I need a
-// Repository' but doesn't create it. In production, Hilt provides the real
-// one. In tests, I provide a fake one. Same ViewModel code, different behavior."
-//
-// @Module: This class provides dependencies Hilt can't create automatically
-// @InstallIn(SingletonComponent): These dependencies live as long as the app
-// @Provides: Each function creates one dependency
-// @Singleton: Only one instance exists across the whole app
-// =============================================================================
+// Singleton-scoped bindings for the database and Retrofit stack. ViewModel
+// and Repository depend only on the interfaces, so tests can swap in fakes
+// via @UninstallModules + @BindValue without touching production code.
 
 @Module
 @InstallIn(SingletonComponent::class)
 object AppModule {
 
-    // =========================================================================
-    // DATABASE
-    // =========================================================================
     @Provides
     @Singleton
     fun provideDatabase(@ApplicationContext context: Context): LocationDatabase {
@@ -66,9 +41,6 @@ object AppModule {
         return database.locationDao()
     }
 
-    // =========================================================================
-    // NETWORKING
-    // =========================================================================
     @Provides
     @Singleton
     fun provideOkHttpClient(): OkHttpClient {

@@ -8,20 +8,13 @@ import dagger.hilt.android.testing.HiltAndroidTest
 import org.junit.Before
 import org.junit.Test
 
-// =============================================================================
-// SEARCH SCREEN TESTS
-// =============================================================================
-// ⭐ These tests demonstrate what Apple's SDET interviews look for:
-//
-// 1. CLEAR TEST NAMES: Each test name describes exactly what it verifies
-// 2. ARRANGE-ACT-ASSERT: Clear structure in every test
-// 3. PAGE OBJECTS: No raw Compose test APIs — readable and maintainable
-// 4. EDGE CASES: Not just happy path — empty, special chars, long input
-// 5. INDEPENDENCE: Each test works alone — no test depends on another
-//
-// INTERVIEW QUESTION: "Write a test for the search feature."
-// → You can walk through ANY of these tests and explain the pattern.
-// =============================================================================
+// Search-screen instrumented tests. Conventions used throughout:
+//   - Test names describe behaviour (search_withSpecialCharacters_doesNotCrash)
+//   - Arrange-Act-Assert structure per test
+//   - All UI access goes through MapPage; no raw Compose matchers
+//   - Edge cases (empty input, special characters, long input) covered
+//     alongside the happy path
+//   - Each test runs independently — no shared state between @Tests
 
 @HiltAndroidTest
 class SearchScreenTest : BaseTestCase() {
@@ -33,10 +26,6 @@ class SearchScreenTest : BaseTestCase() {
         super.setUp()
         mapPage = MapPage(composeTestRule)
     }
-
-    // =========================================================================
-    // HAPPY PATH TESTS
-    // =========================================================================
 
     @Test
     fun searchBar_isDisplayedOnMapScreen() {
@@ -82,14 +71,6 @@ class SearchScreenTest : BaseTestCase() {
         // ASSERT:
         mapPage.assertSearchResultsHidden()
     }
-
-    // =========================================================================
-    // EDGE CASE TESTS
-    // =========================================================================
-    // ⭐ Edge cases are what separate a good SDET from a great one.
-    // Apple interviewers will ask: "What edge cases would you test?"
-    // Having these ready shows you think beyond the happy path.
-    // =========================================================================
 
     @Test
     fun search_withEmptyQuery_showsNoResults() {

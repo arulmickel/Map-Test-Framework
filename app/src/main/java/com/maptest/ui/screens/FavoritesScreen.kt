@@ -15,20 +15,11 @@ import com.maptest.domain.model.SavedLocation
 import com.maptest.ui.TestTags
 import com.maptest.ui.components.LocationCard
 
-// =============================================================================
-// FAVORITES SCREEN
-// =============================================================================
-// Displays user's favorite locations.
-//
-// TESTING SCENARIOS:
-// 1. Empty state: No favorites → show empty message
-// 2. With favorites: Show list of favorites
-// 3. Remove favorite: Tap heart icon → location disappears from list
-// 4. Tap location: Navigate to map centered on that location
-//
-// These are common interview scenarios:
-// "Write a test that verifies removing a favorite updates the list."
-// =============================================================================
+// Test scenarios this screen covers:
+//   - empty state: no favorites → empty message
+//   - with favorites: list rendering
+//   - remove favorite: tap heart → row disappears
+//   - tap row: navigate to map centered on that location
 
 @Composable
 fun FavoritesScreen(

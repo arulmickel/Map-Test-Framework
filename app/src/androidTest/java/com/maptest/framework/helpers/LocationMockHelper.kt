@@ -7,31 +7,10 @@ import android.os.Build
 import android.os.SystemClock
 import androidx.test.platform.app.InstrumentationRegistry
 
-// =============================================================================
-// LOCATION MOCK HELPER
-// =============================================================================
-// ⭐ CRITICAL FOR MAPKIT SDET INTERVIEWS
-//
-// Maps apps need GPS coordinates. In tests, we can't rely on real GPS:
-// - Tests run on emulators (no real GPS)
-// - Tests need deterministic coordinates (same location every time)
-// - Tests need to simulate movement (walking, driving)
-//
-// This helper injects fake GPS coordinates so the app thinks the user
-// is at a specific location.
-//
-// HOW IT WORKS:
-// Android has a "mock location provider" API. We register as a test
-// provider, then push fake Location objects. The app's FusedLocationProvider
-// receives them as if they were real GPS readings.
-//
-// INTERVIEW QUESTION: "How do you test location-based features?"
-// ANSWER: "I use Android's mock location provider to inject deterministic
-// coordinates. My LocationMockHelper can simulate being at any location,
-// moving between locations, and even GPS signal loss. This lets me test
-// geofencing triggers, location permission flows, and map camera updates
-// without any real GPS hardware."
-// =============================================================================
+// Registers as Android's mock location provider, then pushes fake
+// Location objects so FusedLocationProvider receives them as real GPS
+// readings. Lets tests stand in a fixed spot, walk a route, or simulate
+// signal loss without depending on emulator GPS state.
 
 class LocationMockHelper {
 
@@ -125,9 +104,6 @@ class LocationMockHelper {
      *       intervalMs = 1000 // 1 second between points
      *   )
      *
-     * DSA CONNECTION: This iterates through an array of coordinate pairs.
-     * In interviews, you might be asked to calculate total distance of a route
-     * (sum of distances between consecutive points — simple array traversal).
      */
     fun simulateRoute(
         points: List<Pair<Double, Double>>,

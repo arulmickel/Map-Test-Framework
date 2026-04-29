@@ -1,31 +1,9 @@
 package com.maptest.domain.model
 
-// =============================================================================
-// DOMAIN MODEL: SavedLocation
-// =============================================================================
-// WHY SEPARATE DOMAIN MODELS FROM DATABASE ENTITIES:
-// 
-// This is Clean Architecture. The domain model is what the rest of the app
-// uses. The database entity (LocationEntity) is what Room uses. They might
-// look similar now, but they serve different purposes:
-//
-// - SavedLocation: UI and business logic use this. No Room annotations.
-// - LocationEntity: Has @Entity, @PrimaryKey — tied to database schema.
-//
-// WHY THIS MATTERS FOR TESTING:
-// In unit tests, you create SavedLocation objects freely — no database needed.
-// In instrumented tests, you can test the mapping between Entity ↔ Domain.
-//
-// INTERVIEW QUESTION: "Why not use one class for everything?"
-// ANSWER: "Separation of concerns. If the API response format changes or the
-// database schema changes, I only update one layer, not the whole app."
-//
-// DSA CONNECTION:
-// This class implements Comparable — so we can sort locations by distance
-// using built-in sort algorithms. This comes up in interviews:
-// "Given a list of locations, find the K nearest to the user."
-// → Sort by distance, take first K. Or use a min-heap for O(n log k).
-// =============================================================================
+// Domain model used by UI and business logic. Kept separate from
+// LocationEntity (Room) and the API DTOs so schema/JSON changes don't
+// propagate across layers. Implements Comparable so callers can sort by
+// distance with the standard collection API.
 
 data class SavedLocation(
     val id: String,
@@ -38,16 +16,7 @@ data class SavedLocation(
     val category: LocationCategory = LocationCategory.OTHER
 ) : Comparable<SavedLocation> {
 
-    // =========================================================================
-    // Calculate distance to another location using Haversine formula
-    // 
-    // DSA RELEVANCE: This is the "distance between two points" problem.
-    // In interviews, you might be asked to find nearest neighbors,
-    // cluster locations, or validate route distances.
-    //
-    // Haversine formula calculates great-circle distance between two points
-    // on a sphere given their latitudes and longitudes.
-    // =========================================================================
+    /** Great-circle distance to another point in km, via Haversine. */
     fun distanceTo(otherLat: Double, otherLng: Double): Double {
         val earthRadius = 6371.0 // km
 

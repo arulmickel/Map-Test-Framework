@@ -20,28 +20,11 @@ import com.maptest.ui.components.SearchBar
 import com.maptest.ui.viewmodel.MapUiState
 import com.maptest.util.PermissionStatus
 
-// =============================================================================
-// MAP SCREEN
-// =============================================================================
-// This is the main screen of the app. It shows:
-// 1. A search bar at the top
-// 2. Google Map in the middle with markers
-// 3. Search results as a list overlay
-//
-// KEY TESTING CONCEPTS DEMONSTRATED HERE:
-//
-// 1. EVERY element has a testTag → tests can find anything
-// 2. State is passed IN (not created here) → screen is testable in isolation
-// 3. Events are passed OUT via lambdas → tests can verify user actions
-// 4. No side effects in the Composable → deterministic rendering
-//
-// INTERVIEW QUESTION: "How do you test a screen that contains Google Maps?"
-// ANSWER: "I don't test the map rendering itself — that's Google's responsibility.
-// I test the BEHAVIOR around the map: that markers appear for the right
-// locations, that tapping a marker shows details, that search results
-// update the map. I use testTag on the map container and markers, and
-// verify state changes through the ViewModel."
-// =============================================================================
+// Stateless map screen: state in via parameters, events out via lambdas.
+// Every assertable element carries a testTag so tests can target it without
+// matching by text. The map rendering itself is Google's responsibility;
+// tests cover behaviour around it (markers for the right locations, search
+// updates the visible set, permission rationales surface as expected).
 
 @Composable
 fun MapScreen(
@@ -194,9 +177,8 @@ fun MapScreen(
         // PERMISSION RATIONALES
         // =====================================================================
         // Three independent surfaces, any of which can appear based on which
-        // permission is in which state. What matters for SDET purposes is
-        // that every state has a uniquely tagged, independently-assertable
-        // UI element.
+        // permission is in which state. Every state has a uniquely tagged,
+        // independently-assertable UI element.
         if (uiState.shouldShowLocationRationale) {
             PermissionRationaleCard(
                 testTag = TestTags.PERMISSION_LOCATION_RATIONALE,

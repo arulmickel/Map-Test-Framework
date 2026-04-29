@@ -12,53 +12,19 @@ import kotlinx.coroutines.flow.asStateFlow
 import javax.inject.Inject
 import javax.inject.Singleton
 
-// =============================================================================
-// PERMISSION CHECKER
-// =============================================================================
-// WHY THIS EXISTS:
-// A maps app lives or dies by runtime permissions. The three that actually
-// matter for this app:
-//
+// Three runtime permissions matter for this app:
 //   - ACCESS_FINE_LOCATION        (always — "show me where I am")
 //   - ACCESS_BACKGROUND_LOCATION  (Android 10+, geofencing)
 //   - POST_NOTIFICATIONS          (Android 13+, geofence/nav alerts)
 //
-// Android 13 (API 33) promoted POST_NOTIFICATIONS from implicit to runtime.
-// Android 14 (API 34) added partial media grants and stricter foreground
-// service types. Android 15 (API 35) tightened background location prompts
-// and foreground service restrictions further.
+// API 33 promoted POST_NOTIFICATIONS from implicit to runtime; API 34 added
+// partial media grants and stricter foreground service types; API 35
+// tightened background location prompts further.
 //
-// For an SDET, the interesting matrix is:
-//
-//                | Granted | Denied (first time) | Denied (forever) |
-//   ---------------------------------------------------------------
-//   Location     |  map    |  show rationale     | settings deep link |
-//   Background   |  geof.  |  show rationale     | degrade to fg-only |
-//   Notification |  alert  |  show rationale     | in-app fallback    |
-//
-// Every cell in that matrix is a test case, and every cell is a scenario
-// a user will hit in production. You cannot cover this with static code
-// inspection — you need tests that flip the state.
-//
-// WHY AN INTERFACE:
-// Production reads from ContextCompat.checkSelfPermission. Tests need all
-// three states (granted / denied / should-show-rationale), which can't be
-// faked with ContextCompat alone. The interface lets us inject a fake that
-// exposes setters.
-//
-// INTERVIEW QUESTION: "How do you test runtime permission UX across the
-// Android 13/14/15 changes?"
-// ANSWER: "I wrap permission checks behind an interface with a StateFlow
-// per permission. Production uses a Real impl backed by ContextCompat; tests
-// inject a Fake via Hilt @BindValue that lets me flip each permission to
-// GRANTED / DENIED / SHOULD_SHOW_RATIONALE. My ViewModel observes those
-// flows and surfaces state the UI renders via testTags. For each permission
-// I test all three states plus the API-level guards — POST_NOTIFICATIONS
-// is auto-granted below API 33, background location only prompts on API 29+,
-// and foreground-service permissions depend on API 34/35. The interface
-// pattern keeps those API-version branches inside the real impl where they
-// belong, and out of the ViewModel and the tests."
-// =============================================================================
+// The interface exists so tests can flip each permission between
+// GRANTED / DENIED / SHOULD_SHOW_RATIONALE — `ContextCompat` alone cannot
+// be faked. Production uses the Real impl backed by ContextCompat; tests
+// inject a Fake via Hilt @BindValue.
 
 enum class PermissionStatus {
     /** User granted the permission — app can use the protected API. */

@@ -12,40 +12,14 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 // =============================================================================
-// LOCATION REPOSITORY
-// =============================================================================
-// This is the SINGLE SOURCE OF TRUTH for all location data.
+// Single source of truth for location data, three tiers:
+//   1. LRU cache (hot data, in-memory)
+//   2. Room (persistent, local)
+//   3. Retrofit (network, when available)
 //
-// WHY REPOSITORY PATTERN:
-// The ViewModel doesn't know (or care) whether data comes from:
-// - In-memory LRU cache (fastest — O(1))
-// - Room database (fast — local SQLite)
-// - Network API (slow — requires internet)
-//
-// The Repository decides the strategy:
-// 1. Check LRU cache first (hot data, most recently accessed)
-// 2. If not in cache → check Room database (cold data, persistent)
-// 3. If not in DB or stale → fetch from network → save to DB + cache
-//
-// THIS IS AN OFFLINE-FIRST ARCHITECTURE:
-// - Network is treated as a "nice to have," not a requirement
-// - The app always works, even in airplane mode
-// - When network is available, we sync fresh data
-//
-// WHY THIS MATTERS FOR APPLE MAPS:
-// Users open maps in tunnels, rural areas, basements.
-// The app must show SOMETHING useful even without internet.
-//
-// TESTING APPROACH:
-// - Unit tests: Inject mocked DAO and API → verify cache/DB/network logic
-// - Integration tests: Use real Room (in-memory) + MockWebServer
-//
-// INTERVIEW QUESTION: "Describe your data flow architecture."
-// ANSWER: "Offline-first with three layers: LRU cache for hot data, Room
-// for persistent storage, and Retrofit for network sync. The Repository
-// checks cache → DB → network in order, and writes back to lower layers
-// after fetching from higher ones."
-// =============================================================================
+// Offline-first: a network failure never blocks a read; tunnels and airplane
+// mode degrade to cached/local data. Unit tests mock the DAO + API;
+// integration tests use in-memory Room + MockWebServer.
 
 @Singleton
 class LocationRepository @Inject constructor(
@@ -193,7 +167,8 @@ class LocationRepository @Inject constructor(
     // Step 2: Filter results by actual distance (slow, but circular/accurate)
     // Step 3: Sort by distance (nearest first)
     //
-    // This is a common interview pattern: "coarse filter → precise filter"
+    // Coarse filter → precise filter: cheap bounding-box query first to
+    // shrink the candidate set, then accurate Haversine distance check.
     // =========================================================================
     suspend fun getNearbyLocations(
         latitude: Double,
